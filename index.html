@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Result Management System</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      color: #1e293b;
+    }
+
+    header {
+      background: #173b70;
+      color: white;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    header h1 { margin: 0 0 8px; font-size: 26px; }
+    header p { margin: 0; color: #dbeafe; }
+
+    main {
+      max-width: 1000px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+
+    .panel {
+      background: white;
+      padding: 22px;
+      margin-bottom: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px #0f172a0c;
+    }
+
+    h2 { margin-top: 0; font-size: 20px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 7px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .primary { background: #2563eb; color: white; }
+    .secondary { background: #e2e8f0; color: #1e293b; }
+    .danger { background: #fee2e2; color: #991b1b; }
+    button:hover { filter: brightness(.96); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 4px 15px #0f172a0c;
+    }
+
+    .stat p { margin: 0 0 8px; color: #64748b; font-size: 14px; }
+    .stat strong { font-size: 25px; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 480px;
+    }
+
+    th, td {
+      padding: 13px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    th { background: #f8fafc; font-size: 14px; }
+
+    .pass { color: #15803d; font-weight: bold; }
+    .fail { color: #b91c1c; font-weight: bold; }
+    .empty { color: #64748b; text-align: center; padding: 28px; }
+
+    #message { margin-top: 12px; font-size: 14px; color: #b91c1c; }
+    footer { text-align: center; color: #64748b; padding: 20px; font-size: 13px; }
+
+    @media (max-width: 650px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Student Result Management System</h1>
+    <p>Enter, calculate and review student examination results</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Add a student result</h2>
+      <form id="studentForm">
+        <div class="form-grid">
+          <div>
+            <label for="studentName">Student name</label>
+            <input id="studentName" type="text"
+              placeholder="e.g. Ama Mensah" maxlength="80" required>
+          </div>
+          <div>
+            <label for="studentMark">Mark (0–100)</label>
+            <input id="studentMark" type="number"
+              min="0" max="100" step="1" placeholder="e.g. 75" required>
+          </div>
+          <button class="primary" type="submit">Add result</button>
+        </div>
+        <div id="message" role="status" aria-live="polite"></div>
+      </form>
+
+      <div class="actions">
+        <button class="primary" id="calculateBtn">Calculate results</button>
+        <button class="secondary" id="sampleBtn">Load sample data</button>
+        <button class="secondary" id="exportBtn">Export CSV</button>
+        <button class="danger" id="clearBtn">Clear all</button>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Class statistics">
+      <div class="stat"><p>Students</p><strong id="count">0</strong></div>
+      <div class="stat"><p>Class average</p><strong id="average">—</strong></div>
+      <div class="stat"><p>Highest mark</p><strong id="highest">—</strong></div>
+      <div class="stat"><p>Lowest mark</p><strong id="lowest">—</strong></div>
+    </section>
+
+    <section class="panel">
+      <h2>Student results</h2>
+      <p style="color:#64748b;font-size:14px">
+        A mark of 50 or higher is a pass in this demonstration.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student name</th>
+              <th>Mark</th>
+              <th>Result</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr><td colspan="5" class="empty">
+              No results yet. Add a student to begin.
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>Student Result Management System · Array demonstration project</footer>
+
+  <script>
+    // Arrays store the related student records and marks.
+    let students = [];
+
+    const form = document.getElementById("studentForm");
+    const nameInput = document.getElementById("studentName");
+    const markInput = document.getElementById("studentMark");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const name = nameInput.value.trim();
+      const mark = Number(markInput.value);
+
+      if (!name) {
+        message.textContent = "Please enter a student name.";
+        return;
+      }
+
+      if (markInput.value === "" || !Number.isFinite(mark) ||
+          mark < 0 || mark > 100) {
+        message.textContent = "Enter a mark between 0 and 100.";
+        return;
+      }
+
+      students.push({ name: name, mark: mark });
+      message.textContent = "";
+      form.reset();
+      renderResults();
+      nameInput.focus();
+    });
+
+    function renderResults() {
+      const body = document.getElementById("resultsBody");
+      body.replaceChildren();
+
+      document.getElementById("count").textContent = students.length;
+
+      if (students.length === 0) {
+        body.innerHTML =
+          '<tr><td colspan="5" class="empty">No results yet. Add a student to begin.</td></tr>';
+        document.getElementById("average").textContent = "—";
+        document.getElementById("highest").textContent = "—";
+        document.getElementById("lowest").textContent = "—";
+        return;
+      }
+
+      // Extract marks into an array and calculate class statistics.
+      const marks = students.map(student => student.mark);
+      const total = marks.reduce((sum, mark) => sum + mark, 0);
+      const average = total / marks.length;
+
+      document.getElementById("average").textContent = average.toFixed(2);
+      document.getElementById("highest").textContent = Math.max(...marks);
+      document.getElementById("lowest").textContent = Math.min(...marks);
+
+      students.forEach((student, index) => {
+        const row = document.createElement("tr");
+        const result = student.mark >= 50 ? "Pass" : "Fail";
+
+        [index + 1, student.name, student.mark, result].forEach(value => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          if (value === "Pass") cell.className = "pass";
+          if (value === "Fail") cell.className = "fail";
+          row.appendChild(cell);
+        });
+
+        const actionCell = document.createElement("td");
+        const removeButton = document.createElement("button");
+        removeButton.className = "danger";
+        removeButton.textContent = "Remove";
+        removeButton.type = "button";
+        removeButton.addEventListener("click", () => {
+          students.splice(index, 1);
+          renderResults();
+        });
+
+        actionCell.appendChild(removeButton);
+        row.appendChild(actionCell);
+        body.appendChild(row);
+      });
+    }
+
+    document.getElementById("calculateBtn").addEventListener("click", () => {
+      renderResults();
+      message.textContent = students.length
+        ? "Results and class statistics have been calculated."
+        : "Add student results before calculating.";
+    });
+
+    document.getElementById("sampleBtn").addEventListener("click", () => {
+      students = [
+        { name: "Ama Mensah", mark: 75 },
+        { name: "Kojo Asante", mark: 40 },
+        { name: "Abena Owusu", mark: 85 },
+        { name: "Yaw Boateng", mark: 60 },
+        { name: "Akosua Addo", mark: 90 }
+      ];
+      message.textContent = "Sample data loaded.";
+      renderResults();
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (students.length && !confirm("Delete all student results?")) return;
+      students = [];
+      message.textContent = "";
+      renderResults();
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      if (!students.length) {
+        message.textContent = "There are no results to export.";
+        return;
+      }
+
+      const escapeCSV = value =>
+        '"' + String(value).replace(/"/g, '""') + '"';
+
+      const rows = [
+        ["Student Name", "Mark", "Result"],
+        ...students.map(student => [
+          student.name,
+          student.mark,
+          student.mark >= 50 ? "Pass" : "Fail"
+        ])
+      ];
+
+      const csv = rows.map(row => row.map(escapeCSV).join(",")).join("\r\n");
+      const blob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "student-results.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    renderResults();
+  </script>
+</body>
+</html>
